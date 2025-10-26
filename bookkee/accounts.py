@@ -21,12 +21,13 @@ class Account(ABC):
         # TODO: default conf?
         self.conf = {} if conf is None else None
         return self
+    
 
     @staticmethod
-    def read_books(uploaded_file):
-        filename = uploaded_file if isinstance(uploaded_file, str) else uploaded_file.name
+    def read_books(filename_or_object):
+        filename = filename_or_object if isinstance(filename_or_object, str) else filename_or_object.name
         try:
-            all_excel_sheets = pd.read_excel(uploaded_file, None)
+            all_excel_sheets = pd.read_excel(filename, None)
         except:
             raise Exception(f'The file {filename} is not a valid Excel file.')
         valid_sheet_names = [ sheet_name for sheet_name in all_excel_sheets.keys() if sheet_name.endswith('.book') or sheet_name.endswith('.rules') or sheet_name.endswith('.conf') ]

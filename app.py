@@ -4,6 +4,10 @@ import pandas as pd
 from bookkee.accounts import Account
 
 
+# TODO must have a general config with:
+# - default_account
+#
+
 def init_session_state():
     if 'data' not in st.session_state:
         st.session_state['accounts'] = {}
@@ -25,11 +29,22 @@ def entry_point():
         new_account()
     uploaded_file = st.file_uploader("Choose an existing accounting book")
     if uploaded_file is not None:
-        st.session_state.accounts = Account.read_books(file = uploaded_file)
+        new_accounts = Account.read_books(filename_or_object = uploaded_file)
+        for new_account_name in new_accounts.keys():
+            if new_account_name in st.session_state.accounts.keys():
+                raise Exception(f'Account {new_account_name} already exists in current books.')
+        st.session_state.accounts = st.session_state.accounts | new_accounts
         # st.write(dataframe)
+    if len(st.session_state.accounts) > 0:
         bank_statement_file = st.file_uploader("Read a new bank statement")
         if bank_statement_file is not None:
             bank_statement = pd.read_excel(bank_statement_file)
+            if st.session_state.conf['default_account'] is not None:
+                account = st.session_state.conf['default_account']
+            if account is None and len(st.session_state.accounts) == 1:
+                account = list(st.session_state.accounts.values())[0]
+            else:
+                st.selectbox('Select account:', st.session_state.accounts.values())
 
 
 if __name__ == "__main__":
